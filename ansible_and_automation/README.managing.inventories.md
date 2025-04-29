@@ -1,0 +1,3 @@
+# 4. How would you use Ansible inventories to manage different environments (e.g.., staging vs production) Provide an example.
+
+I have extensively covered this when we answered [Structuring Ansible Playbooks for Multi-tier Applications](README.playbooks.muilti-teir-application.md#2-given-a-multi-tier-application-describe-how-you-would-structure-your-ansible-playbooks-and-roles-for-maximum-reusability-and-maintainability)
