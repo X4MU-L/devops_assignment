@@ -23,3 +23,4 @@ This assessment submission is part of the steps for the completion of the DevOps
    - [Deploying Applications with Helm](kubernetes_and_orchestration/README.deploying-with-helm.md#13-describe-the-process-of-deploying-an-application-using-helm-what-are-the-advantages-of-using-helm-charts)
    - [Injecting Secrets into Kubernetes Deployments](kubernetes_and_orchestration/README.injecting-secrets.md#14-how-would-you-securely-inject-secrets-into-a-kubernetes-deployment-provide-an-example-using-kubernetes-secrets)
    - [Horizontal Pod Autoscaling in Kubernetes](kubernetes_and_orchestration/README.hpa.md#15-given-a-scenario-where-you-need-to-scale-an-application-based-on-cpu-usage-explain-how-you-would-configure-horizontal-pod-autoscaling-in-kubernetes)
+5. [Security & Best Practices]()

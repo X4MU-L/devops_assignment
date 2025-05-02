@@ -1,0 +1,82 @@
+services:
+  go-service:
+    build:
+      context: ./go-service
+      dockerfile: Dockerfile
+      target: dev
+    ports:
+      - "8081:8081"
+    environment:
+      - ENV=dev
+      - PORT=8081
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8081/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  python-service:
+    build:
+      context: ./python-service
+      dockerfile: Dockerfile
+      target: dev
+    ports:
+      - "8082:8082"
+      - "5678:5678" # debugpy
+    environment:
+      - ENV=dev
+      - GO_SERVICE_URL=http://go-service:8081
+      - PORT=8082
+    volumes:
+      - ./python-service:/app # Fixed: This should point to python-service
+    depends_on:
+      go-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - app-network
+  rails-init:
+    image: ruby:3.4-slim
+    volumes:
+      - ./rails-service:/app
+    command: bash -c "apt-get update && apt-get install -y build-essential libc-dev curl libpq-dev libyaml-dev libssl-dev zlib1g-dev && cd /app && bundle install"
+    networks:
+      - app-network
+
+  rails-service:
+    build:
+      context: ./rails-service
+      target: dev
+    ports:
+      - "8083:8083"
+    environment:
+      - ENV=dev
+      - PORT=8083
+      - PYTHON_SERVICE_URL=http://python-service:8082
+    depends_on:
+      rails-init:
+        condition: service_completed_successfully
+      python-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8083/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - ./rails-service:/app
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

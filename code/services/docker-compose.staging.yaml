@@ -1,0 +1,62 @@
+services:
+  go-service:
+    build:
+      context: ./go-service
+      dockerfile: Dockerfile
+      target: staging
+    environment:
+      - ENV=staging
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8081/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  python-service:
+    build:
+      context: ./python-service
+      dockerfile: Dockerfile
+      target: staging
+    environment:
+      - ENV=staging
+      - GO_SERVICE_URL=http://go-service:8081
+      - PORT=8082
+    depends_on:
+      go-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - app-network
+
+  rails-service:
+    build:
+      context: ./rails-service
+      target: prod
+    ports:
+      - "8083:8083"
+    environment:
+      - ENV=prod
+      - PORT=8083
+      - PYTHON_SERVICE_URL=http://python-service:8082
+    depends_on:
+      python-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - app-network
+networks:
+  app-network:
+    driver: bridge
